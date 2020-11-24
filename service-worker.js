@@ -41,7 +41,7 @@ workbox.precaching.precacheAndRoute([
     { url: '/js/db.js', revision: '1' },
 
     { url: 'https://fonts.googleapis.com/icon?family=Material+Icons', revision: '1' },
-    { url: 'https://fonts.gstatic.com/s/materialicons/v67/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2', revision: '1' },
+    { url: 'https://fonts.gstatic.com/s/materialicons/v67/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2', revision: '1' }
 ], {
     ignoreUrlParametersMatching: [/.*/]
 });
@@ -52,6 +52,44 @@ workbox.routing.registerRoute(
         cacheName: 'api'
     })
 );
+
+workbox.routing.registerRoute(
+    /^https:\/\/fonts\.googleapis\.com/,
+    workbox.strategies.staleWhileRevalidate({
+        cacheName: 'google-fonts-stylesheets',
+    })
+);
+
+workbox.routing.registerRoute(
+    /^https:\/\/fonts\.gstatic\.com/,
+    workbox.strategies.cacheFirst({
+        cacheName: 'google-fonts-webfonts',
+        plugins: [
+            new workbox.cacheableResponse.Plugin({
+                statuses: [0, 200],
+            }),
+            new workbox.expiration.Plugin({
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+                maxEntries: 30,
+            }),
+        ],
+    })
+);
+
+workbox.routing.registerRoute(
+    /\.(?:png|gif|jpg|jpeg|svg)$/,
+    workbox.strategies.cacheFirst({
+        cacheName: 'images',
+        plugins: [
+            new workbox.expiration.Plugin({
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+            }),
+        ],
+    }),
+);
+
+
 
 // const CACHE_NAME = "ais-v3";
 // const urlsToCache = [
